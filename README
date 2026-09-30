@@ -1,0 +1,72 @@
+LWN RSS
+=======
+
+一个自动聚合 LWN.net 全量 Kernel Index 中已过免费保护期文章的 RSS 服务。
+
+特性
+====
+
+- 定期（默认每天）抓取 https://lwn.net/Kernel/Index 全量 Kernel 索引
+- 只保留发布日期距今至少 14 天的文章
+- 生成标准 RSS 2.0，包含 <title>、<link>、<pubDate>、<guid>
+- 纯 Python 标准库实现，无第三方依赖
+
+快速开始
+========
+
+    # 启用 HTTP 服务（每天自动刷新，自动检测局域网 IP）
+    $ lwn-rss --data-dir ./data
+
+    # 生成一次 RSS（默认获取最近 30 天的免费文章）
+    $ lwn-rss --once --data-dir ./data
+
+    # 使用 year 获取更多文章
+    $ lwn-rss --period year --once --data-dir ./data
+
+    # 使用自定义最旧日期（覆盖 --period）
+    $ lwn-rss --oldest-data 2026-01-01 --once --data-dir ./data
+
+启动 HTTP 服务后，控制台会打印类似：
+
+    Serving RSS at http://0.0.0.0:8000/rss.xml
+
+    Feed URL:
+        http://192.168.1.10:8000/rss.xml
+
+局域网内即可用：
+
+    http://192.168.1.16:8000/rss.xml
+
+也支持 /、/feed、/index.xml 访问同一份 RSS。
+
+注意：全量 Kernel Index 包含自 2004 年以来的所有 Kernel 文章，因此生成的 Feed 会比较大。
+
+作为服务运行
+============
+
+    # 也可使用 --public-base-url 手动指定
+    $ nohup lwn-rss \
+      --data-dir PATH/TO/lwn-kernel-free-rss/data \
+      > PATH/TO/lwn-kernel-free-rss/data/lwn-free.log 2>&1 &
+
+验证
+====
+
+    # 检查 RSS 是否可访问
+    $ curl http://127.0.0.1:8000/rss.xml
+
+    # 检查没有重复 guid（相同文章）
+    $ curl -s http://127.0.0.1:8000/rss.xml | grep -o '<guid[^>]*>[^<]*</guid>' | sort | uniq -d
+
+说明
+====
+
+- LWN 的“免费保护期”以自然日计算：(今天 - 发布日期).days >= 14。
+- 每次刷新都会重新生成 RSS，因此早于当前设置的最旧日期的就条目会被自动删除，不会残留在 feed 中。
+
+免责声明
+========
+
+尽管该项目使用的许可证为 GPLv2，不应该限制用户的使用自由。
+
+但是，用户应该尽可能避免使用此工具对 LWN.net 的服务器造成负担，同时也避免了自己被 LWN.net 封禁 IP。

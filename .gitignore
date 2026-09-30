@@ -1,0 +1,7 @@
+__pycache__/
+*.py[cod]
+data/
+*.log
+lwn_kernel_free.xml
+.ruff_cache
+tools/
